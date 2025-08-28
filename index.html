@@ -1,48 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embed with Keyboard Support and Button</title>
-    <style>
-        body { margin: 0; display: flex; flex-direction: column; align-items: center; }
-        iframe { width: 100%; height: 600px; border: none; cursor: pointer; }
-        button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eagler Craft Embed</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+    }
+    main {
+      padding: 20px;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      cursor: pointer;
+    }
+    footer {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <button id="openBlank">Open in about:blank</button>
-    <iframe id="myIframe" src="https://eaglercraftonline.bitbucket.io/go/minecraft-1.5.2/" allowfullscreen></iframe>
+  <header>
+    <h1>Eagler Craft Embed</h1>
+  </header>
+  <main>
+    <iframe src="https://eaglercraftonline.bitbucket.io/go/minecraft-1.5.2/" allowfullscreen></iframe>
+  </main>
+  <footer>
+    <p>&copy; 2023 Eagler Craft Embed. All rights reserved.</p>
+  </footer>
 
-    <script>
-        const iframe = document.getElementById('myIframe');
+  <script>
+    const iframe = document.querySelector('iframe');
 
-        // Focus the iframe when clicked
-        iframe.addEventListener('click', function() {
-            iframe.contentWindow.focus();
-        });
+    // Focus the iframe when clicked
+    iframe.addEventListener('click', function() {
+      iframe.contentWindow.focus();
+    });
 
-        // Button to open a new about:blank page
-        document.getElementById('openBlank').addEventListener('click', function() {
-            window.open('about:blank', '_blank');
-        });
+    // Handle keyboard events within the iframe
+    iframe.contentWindow.addEventListener('keydown', function(event) {
+      iframe.contentWindow.postMessage({ type: 'keydown', event: event }, '*');
+    });
 
-        // Handle keyboard events within the iframe
-        iframe.contentWindow.addEventListener('keydown', function(event) {
-            iframe.contentWindow.postMessage({ type: 'keydown', event: event }, '*');
-        });
+    iframe.contentWindow.addEventListener('keyup', function(event) {
+      iframe.contentWindow.postMessage({ type: 'keyup', event: event }, '*');
+    });
 
-        iframe.contentWindow.addEventListener('keyup', function(event) {
-            iframe.contentWindow.postMessage({ type: 'keyup', event: event }, '*');
-        });
-
-        // Listen for messages from the iframe and handle them
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'keydown' || event.data.type === 'keyup') {
-                // Pass the keyboard event to the iframe's content
-                iframe.contentWindow.dispatchEvent(new KeyboardEvent(event.data.type, event.data.event));
-            }
-        });
-    </script>
+    // Listen for messages from the iframe and handle them
+    window.addEventListener('message', function(event) {
+      if (event.data.type === 'keydown' || event.data.type === 'keyup') {
+        // Pass the keyboard event to the iframe's content
+        iframe.contentWindow.dispatchEvent(new KeyboardEvent(event.data.type, event.data.event));
+      }
+    });
+  </script>
 </body>
 </html>
