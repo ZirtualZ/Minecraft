@@ -26,6 +26,23 @@
         document.getElementById('openBlank').addEventListener('click', function() {
             window.open('about:blank', '_blank');
         });
+
+        // Handle keyboard events within the iframe
+        iframe.contentWindow.addEventListener('keydown', function(event) {
+            iframe.contentWindow.postMessage({ type: 'keydown', event: event }, '*');
+        });
+
+        iframe.contentWindow.addEventListener('keyup', function(event) {
+            iframe.contentWindow.postMessage({ type: 'keyup', event: event }, '*');
+        });
+
+        // Listen for messages from the iframe and handle them
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'keydown' || event.data.type === 'keyup') {
+                // Pass the keyboard event to the iframe's content
+                iframe.contentWindow.dispatchEvent(new KeyboardEvent(event.data.type, event.data.event));
+            }
+        });
     </script>
 </body>
 </html>
