@@ -1,74 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eagler Craft Embed</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eaglercraft 1.5.2 — Embed</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    header {
-      background-color: #333;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      margin: 0;
-    }
-    main {
-      padding: 20px;
-    }
-    iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-      cursor: pointer;
-    }
-    footer {
-      background-color: #333;
-      color: #fff;
-      padding: 10px;
-      text-align: center;
-    }
+    :root { --bg: #0b0b10; --fg: #e5e7eb; --accent: #22d3ee; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .wrap { position: fixed; inset: 0; display: grid; grid-template-rows: 1fr auto; }
+    .stage { position: relative; height: 100%; }
+    iframe#eagler { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+    .overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); cursor: pointer; transition: opacity .2s ease; }
+    .overlay.hidden { opacity: 0; pointer-events: none; }
+    .overlay .card { text-align: center; padding: 1.25rem 1.5rem; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(15,23,42,.55); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    .overlay h1 { margin: 0 0 .25rem; font-size: 1.125rem; font-weight: 700; letter-spacing: .2px; }
+    .overlay p { margin: 0 0 .75rem; opacity: .85; font-size: .9rem; }
+    .row { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
+    .btn { appearance: none; border: 0; border-radius: 999px; padding: .6rem .9rem; font-weight: 700; cursor: pointer; background: var(--accent); color: #051217; }
+    .btn.secondary { background: transparent; color: var(--fg); border: 1px solid rgba(255,255,255,.14); }
+    .bar { display: flex; align-items: center; gap: .5rem; padding: .5rem; justify-content: center; border-top: 1px solid rgba(255,255,255,.08); background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12)); }
+    .hint { opacity: .7; font-size: .85rem; }
+    .link { color: var(--accent); text-decoration: none; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Eagler Craft Embed</h1>
-  </header>
-  <main>
-    <iframe src="https://eaglercraftonline.bitbucket.io/go/minecraft-1.5.2/" allowfullscreen></iframe>
-  </main>
-  <footer>
-    <p>&copy; 2023 Eagler Craft Embed. All rights reserved.</p>
-  </footer>
+  <div class="wrap">
+    <div class="stage">
+      <div class="overlay" id="overlay">
+        <div class="card">
+          <h1>Click to play</h1>
+          <p>We’ll focus the game so your keyboard and mouse work.</p>
+          <div class="row">
+            <button class="btn" id="startBtn">Start</button>
+            <button class="btn secondary" id="fsBtn">Fullscreen</button>
+          </div>
+        </div>
+      </div>
+
+      <iframe 
+        id="eagler"
+        title="Eaglercraft 1.5.2"
+        src="https://eaglercraftonline.bitbucket.io/go/minecraft-1.5.2/"
+        allow="fullscreen *; gamepad *; clipboard-read; clipboard-write; autoplay; encrypted-media"
+        allowfullscreen
+        referrerpolicy="no-referrer"
+        tabindex="0"
+      ></iframe>
+    </div>
+
+    <div class="bar">
+      <button class="btn" id="fsBtn2">Fullscreen</button>
+      <span class="hint">Tip: click inside the game once to give it focus so it can read your keys and mouse.</span>
+    </div>
+  </div>
 
   <script>
-    const iframe = document.querySelector('iframe');
+    const overlay = document.getElementById('overlay');
+    const startBtn = document.getElementById('startBtn');
+    const fsBtn = document.getElementById('fsBtn');
+    const fsBtn2 = document.getElementById('fsBtn2');
+    const frame = document.getElementById('eagler');
 
-    // Focus the iframe when clicked
-    iframe.addEventListener('click', function() {
-      iframe.contentWindow.focus();
-    });
+    function focusGame() {
+      try { frame.focus(); } catch (e) {}
+      overlay.classList.add('hidden');
+    }
 
-    // Handle keyboard events within the iframe
-    iframe.contentWindow.addEventListener('keydown', function(event) {
-      iframe.contentWindow.postMessage({ type: 'keydown', event: event }, '*');
-    });
+    function goFullscreen() {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen || el.mozRequestFullScreen;
+      if (req) req.call(el);
+      focusGame();
+    }
 
-    iframe.contentWindow.addEventListener('keyup', function(event) {
-      iframe.contentWindow.postMessage({ type: 'keyup', event: event }, '*');
-    });
+    startBtn.addEventListener('click', focusGame);
+    overlay.addEventListener('click', focusGame);
+    fsBtn.addEventListener('click', goFullscreen);
+    fsBtn2.addEventListener('click', goFullscreen);
 
-    // Listen for messages from the iframe and handle them
-    window.addEventListener('message', function(event) {
-      if (event.data.type === 'keydown' || event.data.type === 'keyup') {
-        // Pass the keyboard event to the iframe's content
-        iframe.contentWindow.dispatchEvent(new KeyboardEvent(event.data.type, event.data.event));
-      }
+    // Try to auto-focus once the iframe is loaded (some browsers ignore this until user gesture)
+    frame.addEventListener('load', () => {
+      setTimeout(() => { try { frame.focus(); } catch (e) {} }, 50);
     });
   </script>
 </body>
